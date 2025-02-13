@@ -12,8 +12,7 @@ def init_matrix(rows: int, cols: int) -> list[list[int]]:
     Returns:
     - 2D array (int): This is the 2D array that is created using the input rows and cols.
     """
-    for i in range(10):
-        print("hello world")
+    
     return [[0 for _ in range(cols)] for _ in range(rows)]
 
 
@@ -31,6 +30,14 @@ def detect_edges(
     Returns:
     - processed_image (2D array): This is the processed image obtained after performing convolution (will contain edges).
     """
+    rows = len(image)
+    cols = len(image[0])
+    processed_image=init_matrix(rows,cols)
+    for i in range(rows):
+        for j in range(0,cols,stride):
+            continue
+
+
     pass
 
 
@@ -68,6 +75,32 @@ def main(file_name: str) -> list[list[int]]:
     Returns:
     - final_processed_image (2D array): Obtained after adding the two intermediate processed images.
     """
+    #Code for file reading
+    iFile = open(file_name, "r")
+    stride = int(iFile.readline().strip())
+    rc = (iFile.readline()).strip().split()
+    rows = int(rc[0])
+    cols = int(rc[1])
+    input_image=[]
+    for _ in range(rows):
+        x = iFile.readline().strip().split()
+        x = list(map(int,x))
+        input_image.append(x)
+    filter_size = int(iFile.readline().strip())
+    vertical_filter=[]
+    for _ in range(filter_size):
+        x = iFile.readline().strip().split()
+        x = list(map(int,x))
+        vertical_filter.append(x)
+    horizontal_filter=[]
+    for _ in range(filter_size):
+        x = iFile.readline().strip().split()
+        x = list(map(int,x))
+        horizontal_filter.append(x)
+    iFile.close()
+    print(horizontal_filter)
+
+    
     pass
 
 
