@@ -12,6 +12,8 @@ def init_matrix(rows: int, cols: int) -> list[list[int]]:
     Returns:
     - 2D array (int): This is the 2D array that is created using the input rows and cols.
     """
+    for i in range(10):
+        print("hello world")
     return [[0 for _ in range(cols)] for _ in range(rows)]
 
 
