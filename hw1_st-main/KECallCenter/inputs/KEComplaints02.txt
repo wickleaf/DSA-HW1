@@ -1,0 +1,16 @@
+Billing Technical General
+2 3 1
+Ali Ayesha
+Usman Sarah John
+Ahmed
+10
+0 Ahsan 3 Billing
+0 Bilal 2 Technical
+1 Sara 4 General
+2 Saba 4 General
+2 Fahad 5 Billing
+3 Zain 3 Technical
+3 Zara 6 Technical
+4 Imran 2 Billing
+5 Asma 1 Technical
+6 Amna 3 General

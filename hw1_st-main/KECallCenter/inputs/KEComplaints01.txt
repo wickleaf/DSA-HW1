@@ -1,0 +1,11 @@
+Billing Technical General
+3 2 2
+A1 A2 A3
+B1 B2
+C1 C2
+5
+0 John 5 Billing
+1 Eve 4 Billing
+2 Alice 3 Technical
+3 Charlie 2 Technical
+4 Bob 6 General

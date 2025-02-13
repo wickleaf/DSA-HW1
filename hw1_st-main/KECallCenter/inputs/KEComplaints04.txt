@@ -1,0 +1,15 @@
+Billing Technical General
+3 2 1
+A1 A2 A3
+B1 B2 
+C1
+9
+0 Ahsan 4 Billing
+0 Bilal 4 Technical
+0 Sara 4 General
+1 Farah 5 Billing
+1 Fahad 5 Technical
+1 Zain 5 General
+4 Zara 3 Billing
+4 Imran 3 Technical
+4 Asma 3 General
