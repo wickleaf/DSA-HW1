@@ -35,7 +35,20 @@ def detect_edges(
     processed_image=init_matrix(rows,cols)
     for i in range(rows):
         for j in range(0,cols,stride):
-            continue
+            sum = 0
+            for x in range(len(filter)):
+                for y in range(len(filter)):
+                    targetpixel_i = i+x -(len(filter)//2)
+                    targetpixel_j = j+y -(len(filter)//2)
+
+                    if 0 <= targetpixel_i < rows and 0<= targetpixel_j<cols:
+                        pixel = image[targetpixel_i][targetpixel_j]
+                    else:
+                        pixel =0
+                    sum+= pixel*filter[x][y]
+            processed_image[i][j]=sum
+    return processed_image
+
 
 
     pass
@@ -98,7 +111,15 @@ def main(file_name: str) -> list[list[int]]:
         x = list(map(int,x))
         horizontal_filter.append(x)
     iFile.close()
-    print(horizontal_filter)
+    vertical_processed = detect_edges(input_image,vertical_filter,stride)
+    horizontal_processed = detect_edges(input_image,horizontal_filter,stride)
+
+    final_processed = init_matrix(rows,cols)
+    for i in range(len(horizontal_processed)):
+        for j in range(len(horizontal_processed[0])):
+            final_processed[i][j]=abs(vertical_processed[i][j])+abs(horizontal_processed[i][j])
+    return final_processed
+
 
     
     pass
