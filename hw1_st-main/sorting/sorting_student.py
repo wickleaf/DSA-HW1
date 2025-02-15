@@ -1,3 +1,4 @@
+import math
 def initialize_matrix(n: int) -> list[list[int]]:
     """
     A  function that takes an integer n as an argument and returns a 2D array of size n x n with each cell containing None values.
@@ -28,16 +29,13 @@ def divide_chunks(arr: list[int], chunk_size: int) -> list[list[int]]:
     x = initialize_matrix(chunk_size)
     k=0
     col= 0
-    for i,j in enumerate(arr,1):
-        if (i%chunk_size)==0:
-            x[k][col]=j
+    for i,j in enumerate(arr,1): #Initially used enumerate for a different approach I had in mind but switched to a different one, hence the redunant i
+        x[k][col]=j
+        col+=1
+        if col == chunk_size:
             k+=1
             col=0
-        else:
-            x[k][col]=j
-            col+=1
     return x
-
     # return [arr[i:i+chunk_size] for i in range(0,l,chunk_size)] #Slice Method
 
 
@@ -76,26 +74,28 @@ def consolidate(arr1: list[int], arr2: list[int]) -> list[int]:
 
     arr1_pointer = 0
     arr2_pointer = 0
-    # while high_pointer > low_pointer:
-    #     if arr1[low_pointer] > arr2[high_pointer]:
-    #         low_pointer+=1
-    #     else:
-    #         arr1[low_pointer],arr2[high_pointer]=arr2[high_pointer],arr1[low_pointer]
-    #         high_pointer-=1
-
+    k=0
+    
     tempArr = [None]*(l1+l2)
-    for i in range(l1+l2):
-        if arr1[arr1_pointer] > arr2[arr2_pointer] and arr1_pointer<=l1-1:
-            tempArr[i] = arr1[arr1_pointer]
-        elif arr1[arr1_pointer] < arr2[arr2_pointer] and arr2[arr2_pointer]<=l2-1:
-            tempArr[i] = arr2[arr2_pointer]
-
-
-
-    # for i in range(l1):
-    #     tempArr[i]=arr1[i]
-    # for i in range(l1,l1+l2):
-    #     tempArr[i]=arr2[i]
+    while arr1_pointer <l1 and arr2_pointer<l2:
+        if arr1[arr1_pointer]>arr2[arr2_pointer]:
+            tempArr[k]=arr1[arr1_pointer]
+            arr1_pointer+=1
+            k+=1
+        else:
+            tempArr[k]=arr2[arr2_pointer]
+            arr2_pointer+=1
+            k+=1
+    while arr1_pointer<l1: #To push remaining elements onto tempArr, if any.
+        tempArr[k]=arr1[arr1_pointer]
+        arr1_pointer+=1
+        k+=1
+    while arr2_pointer<l2:
+        tempArr[k]=arr2[arr2_pointer]
+        arr2_pointer+=1
+        k+=1
+    
+    return tempArr
         
     pass
 
@@ -109,15 +109,16 @@ def fusion_sort(arr: list[int]) -> list[int]:
     """
 
     l = length(arr)
+
     if l<=0:
         return arr
-    chonk = round((l**(1/2)))
+    chonk = math.ceil((l**(1/2)))
     broken = divide_chunks(arr,chonk)
     for i in range(chonk):
         selection_sort(broken[i])
     lenBroken = length(broken)
     f = 0
-    #print(length(broken))
+
     for i in range(1,lenBroken):
         broken[f] = consolidate(broken[f],broken[i])
 
@@ -134,11 +135,19 @@ def main(filename) -> list[int]:
     file = open(filename,"r")
     x = file.readline().strip()
     x= x.strip("[]").split(", ")
-    int_list= [int(x) if i != "None" else 0 for i in x]
-
-    return fusion_sort(int_list)
+    int_list= [int(i) if i != "None" else None for i in x] #In case entire array is None values
+    if length(int_list)==0:
+        return int_list
+    else:
+        int_list = [int(i) if i != "None" else -1 for i in x] #Replacing None with -1 to distribute into chunks properly
+        r = fusion_sort(int_list)
+        for i,j in enumerate(r):
+            if j == -1:
+                r[i]=None #Replacing -1 back with None
+        return r
+ 
     pass
 
 
 if __name__ == "__main__":
-    main("./Inputs/sorting03.txt")
+    main("./Inputs/sorting02.txt")
