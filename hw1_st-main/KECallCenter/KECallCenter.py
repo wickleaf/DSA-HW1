@@ -45,6 +45,7 @@ def is_full(queue: dict) -> bool:
     Parameters: queue - a dictionary representing the queue.
     Return: True if the queue is full, False otherwise.
     """
+    return queue["size"]==queue["n"]
     pass
 
 
@@ -55,6 +56,7 @@ def is_empty(queue: dict) -> bool:
     Parameters: queue - a dictionary representing the queue.
     Return: True if the queue is empty, False otherwise.
     """
+    return queue["n"]
     pass
 
 
@@ -64,6 +66,14 @@ def enqueue(queue: dict, item):
     Description: Adds an element with the value 'val' to the rear of the queue.
     Parameters: queue - a dictionary representing the queue, val - the value to be added to the queue.
     """
+    if is_full(queue):
+        raise Exception("Queue is full")
+    if queue["n"] == 0:
+        queue["front"] = 0
+    queue["rear"] = (queue["rear"] + 1) % queue["size"]
+    queue["data"][queue["rear"]] = item
+    queue["n"] += 1
+    
     pass
 
 
@@ -74,6 +84,16 @@ def dequeue(queue: dict):
     Parameters: queue - a dictionary representing the queue.
     Return: The element from the front of the queue.
     """
+    if is_empty(queue):
+        raise Exception("Queue is empty")
+    item = queue["data"][queue["front"]]
+    if queue["n"] == 1:
+        queue["front"] = -1
+        queue["rear"] = -1
+    else:
+        queue["front"] = (queue["front"] + 1) % queue["size"]
+    queue["n"] -= 1
+    return item
     pass
 
 
@@ -84,6 +104,9 @@ def peek(queue: dict):
     Parameters: queue - a dictionary representing the queue.
     Return: The element at the front of the queue.
     """
+    if is_empty(queue):
+        raise Exception("Queue is full")
+    return queue["data"][queue["front"]]
     pass
 
 
@@ -94,6 +117,31 @@ def enqueue_priority(priority_queue: dict, item, priority: int):
     Parameters: queue - a dictionary representing the priority queue, val - the value to be added to the queue,
                 priority - the priority of the element.
     """
+    if is_full(priority_queue):
+        raise Exception("Queue is full")
+    e = (item, priority)
+    if is_empty(priority_queue):
+        priority_queue["n"] == 0
+        priority_queue["front"] = 0
+        priority_queue["rear"] = 0
+        priority_queue["data"][0] = e
+    else:
+        for i,j in enumerate(priority_queue["data"]):
+            if j[1]> priority:
+                index = i
+        for k in range(priority_queue["n"],index,-1):
+            priority_queue["data"][(priority_queue["front"] + k) % priority_queue["size"]] = priority_queue["data"][(priority_queue["front"] + (k - 1)) %priority_queue["size"]]
+        
+        priority_queue["data"][(priority_queue["front"] + i) % priority_queue["size"]] = e
+        priority_queue["rear"] = (priority_queue["front"] + priority_queue["n"] - 1) % priority_queue["size"]
+        priority_queue["n"] += 1
+
+
+
+    
+        
+        
+    
     pass
 
 
@@ -104,6 +152,20 @@ def dequeue_priority(priority_queue: dict):
     Parameters: queue - a dictionary representing the priority queue.
     Return: The element with the minimum priority from the priority queue.
     """
+    if is_empty(priority_queue):
+        raise Exception("Queue is empty")
+    
+    removed = priority_queue["data"]["front"]
+    for j in range(priority_queue["front"],priority_queue["n"]-1):
+        priority_queue["data"][(priority_queue["front"] + j) % priority_queue["size"]] = priority_queue["data"][(priority_queue["front"] + j + 1) % priority_queue["size"]]
+    priority_queue["data"][(priority_queue["front"] + priority_queue["n"] - 1) % priority_queue["size"]] = None
+    priority_queue["n"] -= 1
+    if priority_queue["n"] == 0:
+        priority_queue["front"] = 0
+        priority_queue["rear"] = -1
+    else:
+        priority_queue["rear"] = (priority_queue["front"] + priority_queue["n"] - 1) % priority_queue["size"]
+    return removed[0]
     pass
 
 
@@ -114,6 +176,7 @@ def peek_priority(priority_queue: dict):
     Parameters: queue - a dictionary representing the priority queue.
     Return: The element with the minimum priority from the priority queue.
     """
+    return priority_queue["data"]["front"][0]
     pass
 
 
