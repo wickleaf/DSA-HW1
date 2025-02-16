@@ -14,7 +14,8 @@ def create_list(size):
         'i': 0    # Index for circular storage of elements
     }
     """
-    dequeDict = {"size":size, "data": [None]*size, "n":0, "i":None}
+    dequeDict = {"size":size, "data": [None]*size, "n":0, "front":0,"rear":-1}
+    return dequeDict
 
 
 def is_empty(listADT):
@@ -27,10 +28,7 @@ def is_empty(listADT):
     Returns:
     True if the deque is empty, False otherwise.
     """
-    if listADT["n"]==0:
-        return True
-    else:
-        return False
+    return listADT["n"]==0
 
 
 
@@ -44,10 +42,7 @@ def is_full(listADT):
     Returns:
     True if the deque is full, False otherwise.
     """
-    if listADT["size"]==listADT["n"]:
-        return True
-    else:
-        False
+    return listADT["n"]==listADT["size"]
 
 
 def get(i, listADT):
@@ -61,7 +56,12 @@ def get(i, listADT):
     Returns:
     The element at the specified index.
     """
-    return listADT["data"][i]
+    if i < 0 or i >= listADT["n"]:
+        print("Invalid Index")
+    else:
+        return listADT["data"][(listADT["front"] + i) % listADT["size"]]
+
+
 
 
 def set(i, e, listADT):
@@ -73,7 +73,9 @@ def set(i, e, listADT):
     - e: The element to be set.
     - listADT: The deque data structure.
     """
-    listADT["data"][i]=e
+    if i < 0 or i >= listADT["size"]:
+        raise IndexError("Index out of range")
+    listADT["data"][ (listADT["front"] + i) % listADT["size"] ] = e
 
 
 def length(listADT):
@@ -99,18 +101,16 @@ def add(i, e, listADT):
     - listADT: The deque data structure.
     """
     if is_full(listADT):
-        print("List is full")
+        raise Exception("Deque is full")
     elif i<0 or i>listADT["size"]:
-        print("Invalid Index")
-    else:
-        if is_empty(listADT):
-            listADT["i"]=i
-            listADT["n"]+=1
-            listADT["data"][i]=e
-        else:
-            if listADT["data"][i]==None:
-                listADT["data"][i]=e
-            
+        raise IndexError("Invalid Index")
+    
+    for k in range(listADT["n"],i,-1):
+        listADT["data"][(listADT["front"] + k) % listADT["size"]] = listADT["data"][(listADT["front"] + (k - 1)) % listADT["size"]]
+        
+    listADT["data"][(listADT["front"] + i) % listADT["size"]] = e
+    listADT["rear"] = (listADT["front"] + listADT["n"] - 1) % listADT["size"]
+    listADT["n"] += 1
 
 
 def remove(i, listADT):
@@ -121,7 +121,23 @@ def remove(i, listADT):
     - i: The index of the element to remove.
     - listADT: The deque data structure.
     """
-
+    if is_empty(listADT):
+        raise Exception("Deque is empty")
+    if i < 0 or i >= listADT["n"]:
+        raise IndexError("Invalid Index")
+    removal_index = (listADT["front"]+i)%listADT["size"]
+    removed = listADT["data"][removal_index]
+    for j in range(i,listADT["n"]-1):
+        listADT["data"][(listADT["front"] + j) % listADT["size"]] = listADT["data"][(listADT["front"] + j + 1) % listADT["size"]]
+    listADT["data"][(listADT["front"] + listADT["n"] - 1) % listADT["size"]] = None
+    listADT["n"] -= 1
+    if listADT["n"] == 0:
+        listADT["front"] = 0
+        listADT["rear"] = -1
+    else:
+        listADT["rear"] = (listADT["front"] + listADT["n"] - 1) % listADT["size"]
+    return removed
+    
 
 def insert_last(e, listADT):
     """
@@ -131,6 +147,17 @@ def insert_last(e, listADT):
     - e: The element to be inserted.
     - listADT: The deque data structure.
     """
+    if is_full(listADT):
+        raise Exception("Deque is full")
+    if is_empty(listADT):
+        listADT["front"] = 0
+        listADT["rear"] = 0
+        listADT["data"][0] = e
+        listADT["n"] = 1
+    else:
+        listADT["rear"] = (listADT["rear"] + 1) % listADT["size"]
+        listADT["data"][listADT["rear"]] = e
+        listADT["n"] += 1
 
 
 def remove_last(listADT):
@@ -140,6 +167,17 @@ def remove_last(listADT):
     Parameters:
     - listADT: The deque data structure.
     """
+    if is_empty(listADT):
+        raise Exception("Deque is empty")
+    removed = listADT["data"][listADT["rear"]]
+    listADT["data"][listADT["rear"]] = None
+    if listADT["n"] == 1:
+        listADT["front"] = 0
+        listADT["rear"] = 0
+    else:
+        listADT["rear"] = (listADT["rear"] - 1) % listADT["size"]
+    listADT["n"] -= 1
+    return removed
 
 
 def insert_first(e, listADT):
@@ -150,6 +188,17 @@ def insert_first(e, listADT):
     - e: The element to be inserted.
     - listADT: The deque data structure.
     """
+    if is_full(listADT):
+        raise Exception("Deque is full")
+    if is_empty(listADT):
+        listADT["front"] = 0
+        listADT["rear"] = 0
+        listADT["data"][0] = e
+        listADT["n"] = 1
+    else:
+        listADT["front"] = (listADT["front"] - 1) % listADT["size"]
+        listADT["data"][listADT["front"]] = e
+        listADT["n"] += 1
 
 
 def remove_first(listADT):
@@ -159,6 +208,17 @@ def remove_first(listADT):
     Parameters:
     - listADT: The deque data structure.
     """
+    if is_empty(listADT):
+        raise Exception("Deque is empty")
+    removed = listADT["data"][listADT["front"]]
+    listADT["data"][listADT["front"]] = None
+    if listADT["n"] == 1:
+        listADT["front"] = 0
+        listADT["rear"] = 0
+    else:
+        listADT["front"] = (listADT["front"] + 1) % listADT["size"]
+    listADT["n"] -= 1
+    return removed
 
 
 def get_first(listADT):
@@ -171,6 +231,9 @@ def get_first(listADT):
     Returns:
     The first element in the deque.
     """
+    if is_empty(listADT):
+        raise Exception("Deque is empty")
+    return listADT["data"][listADT["front"]]
 
 
 def get_last(listADT):
@@ -183,3 +246,6 @@ def get_last(listADT):
     Returns:
     The last element in the deque.
     """
+    if is_empty(listADT):
+        raise Exception("Deque is empty")
+    return listADT["data"][listADT["rear"]]
