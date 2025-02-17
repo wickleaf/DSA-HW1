@@ -13,8 +13,6 @@ def create_queue(size: int) -> dict:
         "n": 0,  # number of elements in the queue
         "size": size,  # size of the queue
     }
-
-
 # DO NOT CHANGE THIS FUNCTION
 # Create Agent Priority Queues
 def create_agents_queue(categories: list, sizes: list) -> dict:
@@ -26,7 +24,6 @@ def create_agents_queue(categories: list, sizes: list) -> dict:
     """
     return {category: create_queue(size) for category, size in zip(categories, sizes)}
 
-
 # Create Call Priority Queues
 def create_call_queues(categories, size):
     """Description: Creates and initializes a dictionary containing keys as call categories
@@ -36,7 +33,6 @@ def create_call_queues(categories, size):
     Return: A dictionary representing the initialized priority queue.
     """
     return {category: create_queue(size) for category in categories}
-
 
 # Check if the queue is full
 def is_full(queue: dict) -> bool:
@@ -48,7 +44,6 @@ def is_full(queue: dict) -> bool:
     return queue["size"]==queue["n"]
     pass
 
-
 # Check if the queue is empty
 def is_empty(queue: dict) -> bool:
     """
@@ -56,9 +51,8 @@ def is_empty(queue: dict) -> bool:
     Parameters: queue - a dictionary representing the queue.
     Return: True if the queue is empty, False otherwise.
     """
-    return queue["n"]
+    return queue["n"]==0
     pass
-
 
 # Add an element to the rear of the queue
 def enqueue(queue: dict, item):
@@ -75,7 +69,6 @@ def enqueue(queue: dict, item):
     queue["n"] += 1
     
     pass
-
 
 # Remove and return the element from the front of the queue
 def dequeue(queue: dict):
@@ -96,7 +89,6 @@ def dequeue(queue: dict):
     return item
     pass
 
-
 # Return the element at the front of the queue without removing it
 def peek(queue: dict):
     """
@@ -109,7 +101,6 @@ def peek(queue: dict):
     return queue["data"][queue["front"]]
     pass
 
-
 # Add an element with priority to the priority queue
 def enqueue_priority(priority_queue: dict, item, priority: int):
     """
@@ -118,32 +109,35 @@ def enqueue_priority(priority_queue: dict, item, priority: int):
                 priority - the priority of the element.
     """
     if is_full(priority_queue):
-        raise Exception("Queue is full")
-    e = (item, priority)
+        raise Exception("Priority queue full")
+    
+    e = (priority, item)
     if is_empty(priority_queue):
-        priority_queue["n"] == 0
+        priority_queue["data"][0] = e
         priority_queue["front"] = 0
         priority_queue["rear"] = 0
-        priority_queue["data"][0] = e
-    else:
-        for i,j in enumerate(priority_queue["data"]):
-            if j[1]> priority:
-                index = i
-        for k in range(priority_queue["n"],index,-1):
-            priority_queue["data"][(priority_queue["front"] + k) % priority_queue["size"]] = priority_queue["data"][(priority_queue["front"] + (k - 1)) %priority_queue["size"]]
-        
-        priority_queue["data"][(priority_queue["front"] + i) % priority_queue["size"]] = e
-        priority_queue["rear"] = (priority_queue["front"] + priority_queue["n"] - 1) % priority_queue["size"]
-        priority_queue["n"] += 1
+        priority_queue["n"] = 1
+        return
 
+    # Find insertion position
+    pos = None
+    for i in range(priority_queue["front"], priority_queue["front"] + priority_queue["n"]):
+        index = i % priority_queue["size"]
+        if priority < priority_queue["data"][index][0]:
+            pos = index
+            break
 
+    if pos is None:  # Add at end
+        pos = (priority_queue["rear"] + 1) % priority_queue["size"]
+    else:  # Shift elements
+        for j in range(priority_queue["rear"], pos-1, -1):
+            next_idx = (j + 1) % priority_queue["size"]
+            current_idx = j % priority_queue["size"]
+            priority_queue["data"][next_idx] = priority_queue["data"][current_idx]
 
-    
-        
-        
-    
-    pass
-
+    priority_queue["data"][pos] = e
+    priority_queue["rear"] = (priority_queue["rear"] + 1) % priority_queue["size"]
+    priority_queue["n"] += 1
 
 # Remove and return the element with the minimum priority from the priority queue
 def dequeue_priority(priority_queue: dict):
@@ -153,21 +147,15 @@ def dequeue_priority(priority_queue: dict):
     Return: The element with the minimum priority from the priority queue.
     """
     if is_empty(priority_queue):
-        raise Exception("Queue is empty")
+        raise Exception("Priority queue empty")
     
-    removed = priority_queue["data"]["front"]
-    for j in range(priority_queue["front"],priority_queue["n"]-1):
-        priority_queue["data"][(priority_queue["front"] + j) % priority_queue["size"]] = priority_queue["data"][(priority_queue["front"] + j + 1) % priority_queue["size"]]
-    priority_queue["data"][(priority_queue["front"] + priority_queue["n"] - 1) % priority_queue["size"]] = None
+    item = priority_queue["data"][priority_queue["front"]]
+    priority_queue["front"] = (priority_queue["front"] + 1) % priority_queue["size"]
     priority_queue["n"] -= 1
     if priority_queue["n"] == 0:
-        priority_queue["front"] = 0
+        priority_queue["front"] = -1
         priority_queue["rear"] = -1
-    else:
-        priority_queue["rear"] = (priority_queue["front"] + priority_queue["n"] - 1) % priority_queue["size"]
-    return removed[0]
-    pass
-
+    return item
 
 # Return the element with the minimum priority from the priority queue without removing it
 def peek_priority(priority_queue: dict):
@@ -176,9 +164,9 @@ def peek_priority(priority_queue: dict):
     Parameters: queue - a dictionary representing the priority queue.
     Return: The element with the minimum priority from the priority queue.
     """
-    return priority_queue["data"]["front"][0]
-    pass
-
+    if is_empty(priority_queue):
+        raise Exception("Priority queue empty")
+    return priority_queue["data"][priority_queue["front"]]
 
 def handle_calls(call_queues, agent_queues, call_log):
     """
@@ -192,13 +180,61 @@ def handle_calls(call_queues, agent_queues, call_log):
     # Simulation parameters
     Simulation = True
     currentTime = 0
-
+    categories = list(call_queues.keys())
+    
     while Simulation:
         # provide your implementation here
-
-        # Increment the current time for the next iteration
-        currentTime += 1
-
+        processed = False #Processing calls for each category
+        for category in categories:
+            call_q = call_queues[category]
+            agent_q = agent_queues[category]
+            
+            while not is_empty(call_q) and not is_empty(agent_q):
+                try:
+                    call_priority, call_data = peek_priority(call_q) #Unpacking tuple
+                    agent_priority, agent_name = peek_priority(agent_q)
+                except:
+                    break
+                
+                if call_priority > currentTime:
+                    break
+                
+                if agent_priority > currentTime:
+                    break
+                
+                # Dequeue call and agent
+                call = dequeue_priority(call_q)
+                agent = dequeue_priority(agent_q)
+                start_time, duration, caller = call[1]
+                
+                # Process call
+                end_time = currentTime + duration
+                waiting_time = currentTime - start_time
+                enqueue(call_log, (caller, category, agent[1], currentTime, end_time, waiting_time))
+                
+                enqueue_priority(agent_q, agent[1], end_time)
+                processed = True
+                
+        # Check if any agent is now available
+        for category in categories:
+            agent_q = agent_queues[category]
+            if not is_empty(agent_q):
+                agent_priority, _ = peek_priority(agent_q)
+                if agent_priority <= currentTime:
+                    agent = dequeue_priority(agent_q)
+                    enqueue_priority(agent_q, agent[1], 0)
+        
+        # Check termination condition
+        all_empty = True
+        for category in categories:
+            if not is_empty(call_queues[category]):
+                all_empty = False
+                break
+        if all_empty:
+            break
+            
+        if not processed:
+            currentTime += 1
 
 # Main simulation function
 def simulate_call_center(filename):
@@ -213,14 +249,43 @@ def simulate_call_center(filename):
     # Populate the call queue with call details from the remaining lines contain the call details (start time, caller name, call duration) separated by spaces
 
     # provide your implementation here
+    # Read input file
+    with open(filename, 'r') as f:
+        lines = [line.strip() for line in f.readlines()]
+        #print(lines)
 
+    categories = lines[0].split()
+    agent_counts = list(map(int, lines[1].split()))
+    
+
+    agent_queues = create_agents_queue(categories, agent_counts)
+    current_line = 2
+    for index, category in enumerate(categories):
+        agent_names = lines[current_line].split()
+        current_line += 1
+        for name in agent_names:
+            enqueue_priority(agent_queues[category], name, 0)
+    
+
+    num_calls = int(lines[current_line])
+    current_line += 1
+    call_queues = create_call_queues(categories, num_calls)
+    for _ in range(num_calls):
+        callerInfo = lines[current_line].split()
+        #print(callerInfo)
+        current_line += 1
+        start_time = int(callerInfo[0])
+        caller = callerInfo[1]
+        duration = int(callerInfo[2])
+        category = callerInfo[3]
+        enqueue_priority(call_queues[category], (start_time, duration, caller), start_time)
+    
+    # Initialize call log
     call_log = create_queue(num_calls)
-    # Simulate call processing using CallSimulator
-
+    
     handle_calls(call_queues, agent_queues, call_log)
 
     # Return the call log data as a list
     return call_log["data"]
 
-
-simulate_call_center("KEComplaints.txt")
+simulate_call_center("./inputs/KEComplaints01.txt")
